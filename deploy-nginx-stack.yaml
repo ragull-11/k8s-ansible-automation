@@ -1,3 +1,5 @@
+# Triggered via Jenkins polling - test run
+
 ---
 - name: Deploy NGINX + Service + MetalLB stack on Kubernetes
   hosts: master

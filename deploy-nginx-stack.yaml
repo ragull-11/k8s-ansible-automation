@@ -1,0 +1,53 @@
+---
+- name: Deploy NGINX + Service + MetalLB stack on Kubernetes
+  hosts: master
+  become: false
+  vars:
+    manifest_dir: /home/ditto/k8s-ansible/manifests
+    remote_manifest_dir: /home/ditto/k8s-manifests
+
+  tasks:
+    - name: Ensure remote manifest directory exists on master
+      file:
+        path: "{{ remote_manifest_dir }}"
+        state: directory
+
+    - name: Copy MetalLB config to master
+      copy:
+        src: "{{ manifest_dir }}/metallb-config.yaml"
+        dest: "{{ remote_manifest_dir }}/metallb-config.yaml"
+
+    - name: Copy NGINX deployment to master
+      copy:
+        src: "{{ manifest_dir }}/nginx-deployment.yaml"
+        dest: "{{ remote_manifest_dir }}/nginx-deployment.yaml"
+
+    - name: Copy NGINX NodePort service to master
+      copy:
+        src: "{{ manifest_dir }}/nginx-service.yaml"
+        dest: "{{ remote_manifest_dir }}/nginx-service.yaml"
+
+    - name: Copy NGINX LoadBalancer service to master
+      copy:
+        src: "{{ manifest_dir }}/nginx-loadbalancer.yaml"
+        dest: "{{ remote_manifest_dir }}/nginx-loadbalancer.yaml"
+
+    - name: Apply MetalLB config
+      command: kubectl apply -f {{ remote_manifest_dir }}/metallb-config.yaml
+      environment:
+        KUBECONFIG: /home/ditto/.kube/config
+
+    - name: Apply NGINX Deployment
+      command: kubectl apply -f {{ remote_manifest_dir }}/nginx-deployment.yaml
+      environment:
+        KUBECONFIG: /home/ditto/.kube/config
+
+    - name: Apply NGINX NodePort Service
+      command: kubectl apply -f {{ remote_manifest_dir }}/nginx-service.yaml
+      environment:
+        KUBECONFIG: /home/ditto/.kube/config
+
+    - name: Apply NGINX LoadBalancer Service
+      command: kubectl apply -f {{ remote_manifest_dir }}/nginx-loadbalancer.yaml
+      environment:
+        KUBECONFIG: /home/ditto/.kube/config
